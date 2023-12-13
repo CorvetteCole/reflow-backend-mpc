@@ -4,6 +4,8 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
 from marshmallow import Schema, fields, validates, ValidationError
 
+from constants import ControlState
+
 # Create an APISpec
 spec = APISpec(
     title="Thermal Curve API",
@@ -37,6 +39,15 @@ class ReflowCurveSchema(Schema):
             raise ValidationError('Temperatures must be in ascending order.')
 
 
+class ReflowStatusSchema(Schema):
+    curve = fields.Nested(ReflowCurveSchema, required=True, description="The curve data")
+    running = fields.Boolean(required=True, description="Is the curve process running")
+    control_state = fields.Enum(ControlState, required=True, description="Current state of the curve process")
+    progress = fields.Integer(required=True, description="Progress of the curve 0-100%")
+    actual_temperatures = fields.List(fields.List(fields.Float), required=True,
+                                      description="Array of [time, temperature] points defining the actual curve so far")
+
+
 app = Flask(__name__)
 
 
@@ -65,6 +76,36 @@ def start_curve():
         return jsonify({'status': 'error', 'message': errors}), 400
 
     return jsonify({'status': 'success', 'message': 'Curve process started.'}), 200
+
+
+@app.route('/curve_status', methods=['GET'])
+def curve_status():
+    """
+    Get the current status of the thermal curve process.
+    ---
+    get:
+      description: Get the current status of the thermal curve process.
+      responses:
+        200:
+          description: Current status of the curve process.
+          content:
+            application/json:
+              schema: ReflowStatusSchema
+    """
+
+    dummy_status = ReflowStatusSchema().load({
+        'curve': {
+            'name': 'Test Curve',
+            'description': 'A test curve',
+            'curve': [[0, 25], [30, 150], [60, 200], [90, 200], [120, 25]]
+        },
+        'running': True,
+        'control_state': ControlState.HEATING,
+        'progress': 50,
+        'actual_temperatures': [[0, 25], [30, 150], [60, 200]]
+    })
+
+    return dummy_status.dump(), 200
 
 
 # To generate OpenAPI documentation
