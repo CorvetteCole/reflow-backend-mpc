@@ -55,6 +55,8 @@ exit(0)
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+client_subscriptions = {}
+
 
 # Use the schema to document the route
 @app.route('/start_curve', methods=['POST'])
@@ -181,9 +183,6 @@ def get_logs():
 @app.route("/openapi.json")
 def create_openapi_spec():
     return jsonify(spec.to_dict())
-
-
-client_subscriptions = {}
 
 
 @socketio.on('subscribe')

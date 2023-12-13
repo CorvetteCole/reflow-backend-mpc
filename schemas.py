@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields, validates, ValidationError, validates_schema
-from constants import ControlState, LogSeverity
+from constants import ControlState, LogSeverity, OvenState
+
 
 # Define a schema for the request
 class ReflowCurveSchema(Schema):
@@ -24,18 +25,33 @@ class ReflowCurveSchema(Schema):
 
 
 class ReflowStatusSchema(Schema):
-    curve = fields.Nested(ReflowCurveSchema, required=True, metadata={'description': "The curve data"})
-    running = fields.Boolean(required=True, metadata={'description': "Is the curve process running"})
-    control_state = fields.Enum(ControlState, required=True,
-                                metadata={'description': "Current state of the curve process"})
-    progress = fields.Float(required=True, metadata={'description': "Progress of the curve 0-100%"})
     actual_temperatures = fields.Nested(ReflowCurveSchema, required=True,
                                         metadata={'description': "Array of points defining the actual curve so far"})
+    state = fields.Enum(ControlState, required=True,
+                        metadata={'description': "Current state of the reflow process"})
+
+
+class ControlStatusSchema(Schema):
+    curve = fields.Nested(ReflowCurveSchema, required=True, metadata={'description': "The curve data"})
+    reflow = fields.Nested(ReflowStatusSchema, required=True, metadata={'description': "The control data"})
+
+
+class OvenStatusSchema(Schema):
+    temperature = fields.Float(required=True, metadata={'description': "The current temperature of the oven"})
+    state = fields.Enum(OvenState, required=True, metadata={'description': "The current state of the oven"})
+    duty_cycle = fields.Int(required=True, metadata={'description': "The current duty cycle of the oven"})
+    door_open = fields.Boolean(required=True, metadata={'description': "Whether the oven door is open or not"})
+    errors = fields.List(fields.String, metadata={'description': "Array of errors if state is FAULT"})
+
+    @validates('duty_cycle')
+    def validate_duty_cycle(self, value):
+        if value < 0 or value > 100:
+            raise ValidationError('Duty cycle must be between 0 and 100')
 
 
 class LogMessageSchema(Schema):
     message = fields.String(required=True, metadata={'description': "The log message"})
-    severity = fields.Field(required=True, metadata={'description': "Severity of the log message"})
+    severity = fields.Enum(LogSeverity, required=True, metadata={'description': "Severity of the log message"})
     time = fields.Integer(required=True,
                           metadata={'description': "Time of the log message in milliseconds since startup"})
 
