@@ -3,7 +3,13 @@ from flask_socketio import SocketIO, emit
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
-from marshmallow import Schema, fields, validates, ValidationError
+
+from schemas import *
+
+import warnings
+
+warnings.simplefilter('always')
+from pprint import pprint
 
 from constants import ControlState, LogSeverity
 
@@ -15,50 +21,36 @@ spec = APISpec(
     plugins=[FlaskPlugin(), MarshmallowPlugin()],
 )
 
+testStatus = ReflowStatusSchema().load({
+    'curve': {
+        'name': 'Test Curve',
+        'description': 'A test curve',
+        'times': [0, 30, 60, 90],
+        'temperatures': [25, 150, 170, 210]
 
-# Define a schema for the request
-class ReflowCurveSchema(Schema):
-    name = fields.String(required=True, metadata={'description': "Name of the curve"})
-    description = fields.String(required=True, metadata={'description': "Description of the curve"})
-    curve = fields.List(fields.List(fields.Float), required=True,
-                        metadata={'description': "Array of [time, temperature] points defining the curve"})
+    },
+    'running': True,
+    'control_state': ControlState.HEATING.name,
+    'progress': 50,
+    'actual_temperatures': {
+        'times': [0, 30, 60],
+        'temperatures': [25, 150, 200]
+    }
+})
 
-    @validates('curve')
-    def validate_reflow_curve(self, value):
-        # Check that the array has at least one point
-        if not value:
-            raise ValidationError('At least one [time, temperature] point is required.')
+pprint(ReflowStatusSchema().dump(testStatus))
 
-        # Separate the times and temperatures
-        times, temperatures = zip(*value)
+print('\n')
+testCurve = ReflowCurveSchema().load({
+    'name': 'Test Curve',
+    'description': 'A test curve',
+    'times': [0, 30, 60, 90],
+    'temperatures': [25, 150, 170, 210]
+})
 
-        # Validate sequence is strictly increasing
-        if not all(x < y for x, y in zip(times, times[1:])):
-            raise ValidationError('Times must be in ascending order.')
+pprint(ReflowCurveSchema().dump(testCurve))
 
-        if not all(x < y for x, y in zip(temperatures, temperatures[1:])):
-            raise ValidationError('Temperatures must be in ascending order.')
-
-
-class ReflowStatusSchema(Schema):
-    curve = fields.Nested(ReflowCurveSchema, required=True, metadata={'description': "The curve data"})
-    running = fields.Boolean(required=True, metadata={'description': "Is the curve process running"})
-    control_state = fields.Enum(ControlState, required=True,
-                                metadata={'description': "Current state of the curve process"})
-    progress = fields.Float(required=True, metadata={'description': "Progress of the curve 0-100%"})
-    actual_temperatures = fields.List(fields.List(fields.Float), required=True,
-                                      metadata={
-                                          'description': "Array of [time, temperature] points defining the actual "
-                                                         "curve so far"})
-
-
-class LogMessageSchema(Schema):
-    message = fields.String(required=True, metadata={'description': "The log message"})
-    severity = fields.Field(required=True, metadata={'description': "Severity of the log message"})
-    time = fields.Integer(required=True,
-                          metadata={'description': "Time of the log message in milliseconds since startup"})
-
-
+exit(0)
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -165,13 +157,21 @@ def get_logs():
           description: Current logs.
           content:
             application/json:
-              schema: LogMessageSchema
+              schema: LogMessagesSchema
     """
-
-    dummy_logs = LogMessageSchema().load({
-        'message': 'This is a test log',
-        'severity': LogSeverity.INFO,
-        'time': 123456789
+    dummy_logs = LogMessagesSchema().load({
+        'logs': [
+            {
+                'message': 'This is a test log',
+                'severity': LogSeverity.INFO,
+                'time': 123456789
+            },
+            {
+                'message': 'This is another test log',
+                'severity': LogSeverity.WARN,
+                'time': 123456789
+            }
+        ]
     })
 
     return dummy_logs.dump(), 200
