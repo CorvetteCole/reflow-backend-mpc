@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_socketio import SocketIO, emit
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
@@ -49,6 +50,7 @@ class ReflowStatusSchema(Schema):
 
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 
 # Use the schema to document the route
@@ -108,10 +110,120 @@ def curve_status():
     return dummy_status.dump(), 200
 
 
+@app.route('/stop_curve', methods=['POST'])
+def stop_curve():
+    """
+    Stop the thermal curve process.
+    ---
+    post:
+      description: Stop the thermal curve process.
+      responses:
+        200:
+          description: Curve process stopped.
+        400:
+          description: Missing or invalid input.
+    """
+    return jsonify({'status': 'success', 'message': 'Curve process stopped.'}), 200
+
+
+@app.route('/reset', methods=['POST'])
+def reset_device():
+    """
+    Reset the device.
+    ---
+    post:
+      description: Reset the device.
+      responses:
+        200:
+          description: Device reset.
+        400:
+          description: Missing or invalid input.
+    """
+    return jsonify({'status': 'success', 'message': 'Device reset.'}), 200
+
+
 # To generate OpenAPI documentation
 @app.route("/openapi.json")
 def create_openapi_spec():
     return jsonify(spec.to_dict())
+
+
+client_subscriptions = {}
+
+
+@socketio.on('subscribe')
+def handle_subscribe(message):
+    """Subscribe a client to one or more channels."""
+    sid = request.sid
+    channels = message.get('channels', [])
+    valid_channels = {'oven_status', 'curve_status', 'log_message'}
+
+    # Store only valid channel names
+    selected_channels = {channel for channel in channels if channel in valid_channels}
+
+    if sid not in client_subscriptions:
+        client_subscriptions[sid] = selected_channels
+    else:
+        client_subscriptions[sid].update(selected_channels)
+
+    emit('subscription_update', {'subscribed': True, 'channels': list(client_subscriptions[sid])})
+
+
+@socketio.on('unsubscribe')
+def handle_unsubscribe(message):
+    """Unsubscribe a client from one or more channels."""
+    sid = request.sid
+    channels = message.get('channels', [])
+    valid_channels = {'oven_status', 'curve_status', 'log_message'}
+
+    # Only proceed if the client has any subscriptions
+    if sid in client_subscriptions:
+        # Remove valid channel names that the client wants to unsubscribe from
+        client_subscriptions[sid] -= set(channels).intersection(valid_channels)
+
+        if not client_subscriptions[sid]:
+            client_subscriptions.pop(sid)
+
+    emit('subscription_update', {'subscribed': False, 'channels': list(client_subscriptions.get(sid, []))})
+
+
+@socketio.on('disconnect')
+def on_disconnect():
+    # Clean up client subscriptions
+    client_subscriptions.pop(request.sid, None)
+
+
+# Background task to emit oven status
+def oven_status_emitter():
+    # TODO
+    while True:
+        socketio.emit('oven_status', dict(status))
+
+
+# Background task to emit curve status
+def curve_status_emitter():
+    while True:
+        curve_info = {
+            'running': control_state.value != State.IDLE.value,
+            'control_state': control_state.value,
+            'control_pwm': control_pwm.value
+        }
+        socketio.emit('curve_status', curve_info)
+        time.sleep(1)
+
+
+# Background task to emit logs
+def logs_emitter():
+    log_file_path = log_dir / 'message.log'
+    with open(log_file_path, 'r') as log_file:
+        while True:
+            where = log_file.tell()
+            line = log_file.readline()
+            if not line:
+                time.sleep(1)
+                log_file.seek(where)
+            else:
+                socketio.emit('log_message', {'message': line.strip()})
 
 
 with app.test_request_context():
@@ -119,4 +231,7 @@ with app.test_request_context():
     spec.path(view=start_curve, app=app)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.start_background_task(oven_status_emitter)
+    socketio.start_background_task(curve_status_emitter)
+    socketio.start_background_task(logs_emitter)
+    socketio.run(app, host='0.0.0.0', port=5000)
