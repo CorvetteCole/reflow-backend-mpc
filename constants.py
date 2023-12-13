@@ -15,3 +15,19 @@ class ControlState(Enum):
             return cls[s.upper()]
         except KeyError:
             raise ValueError()
+
+
+class LogSeverity(Enum):
+    DEBUG = 0
+    INFO = 1
+    WARN = 2
+    CRITICAL = 3
+
+    # from string
+    @classmethod
+    def from_string(cls, s):
+        # case-insensitive string of name
+        try:
+            return cls[s.upper()]
+        except KeyError:
+            raise ValueError()

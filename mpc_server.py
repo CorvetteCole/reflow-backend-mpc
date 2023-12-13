@@ -5,7 +5,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
 from marshmallow import Schema, fields, validates, ValidationError
 
-from constants import ControlState
+from constants import ControlState, LogSeverity
 
 # Create an APISpec
 spec = APISpec(
@@ -47,6 +47,12 @@ class ReflowStatusSchema(Schema):
     progress = fields.Integer(required=True, description="Progress of the curve 0-100%")
     actual_temperatures = fields.List(fields.List(fields.Float), required=True,
                                       description="Array of [time, temperature] points defining the actual curve so far")
+
+
+class LogMessageSchema(Schema):
+    message = fields.String(required=True, description="The log message")
+    severity = fields.Enum(LogSeverity, required=True, description="Severity of the log message")
+    time = fields.Integer(required=True, description="Time of the log message in milliseconds since startup")
 
 
 app = Flask(__name__)
@@ -140,6 +146,30 @@ def reset_device():
           description: Missing or invalid input.
     """
     return jsonify({'status': 'success', 'message': 'Device reset.'}), 200
+
+
+@app.route('/logs', methods=['GET'])
+def get_logs():
+    """
+    Get the current logs.
+    ---
+    get:
+      description: Get the current logs.
+      responses:
+        200:
+          description: Current logs.
+          content:
+            application/json:
+              schema: LogMessageSchema
+    """
+
+    dummy_logs = LogMessageSchema().load({
+        'message': 'This is a test log',
+        'severity': LogSeverity.INFO,
+        'time': 123456789
+    })
+
+    return dummy_logs.dump(), 200
 
 
 # To generate OpenAPI documentation
