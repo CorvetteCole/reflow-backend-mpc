@@ -37,6 +37,7 @@ class ControlStatusSchema(Schema):
 
 
 class OvenStatusSchema(Schema):
+    time = fields.Int(required=True, metadata={'description': "Time in milliseconds since startup"})
     temperature = fields.Float(required=True, metadata={'description': "The current temperature of the oven"})
     state = fields.Enum(OvenState, required=True, metadata={'description': "The current state of the oven"})
     duty_cycle = fields.Int(required=True, metadata={'description': "The current duty cycle of the oven"})

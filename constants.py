@@ -4,6 +4,7 @@ pre_curve_time_s = 15
 mpc_lookahead_s = 120
 time_step_s = 1
 
+
 class OvenState(Enum):
     IDLE = 0
     HEATING = 1
