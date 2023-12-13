@@ -18,12 +18,12 @@ spec = APISpec(
 
 # Define a schema for the request
 class ReflowCurveSchema(Schema):
-    name = fields.String(required=True, description="Name of the curve")
-    description = fields.String(required=True, description="Description of the curve")
+    name = fields.String(required=True, metadata={'description': "Name of the curve"})
+    description = fields.String(required=True, metadata={'description': "Description of the curve"})
     curve = fields.List(fields.List(fields.Float), required=True,
-                        description="Array of [time, temperature] points defining the curve")
+                        metadata={'description': "Array of [time, temperature] points defining the curve"})
 
-    @validates('reflow_curve')
+    @validates('curve')
     def validate_reflow_curve(self, value):
         # Check that the array has at least one point
         if not value:
@@ -41,18 +41,23 @@ class ReflowCurveSchema(Schema):
 
 
 class ReflowStatusSchema(Schema):
-    curve = fields.Nested(ReflowCurveSchema, required=True, description="The curve data")
-    running = fields.Boolean(required=True, description="Is the curve process running")
-    control_state = fields.Enum(ControlState, required=True, description="Current state of the curve process")
-    progress = fields.Integer(required=True, description="Progress of the curve 0-100%")
+    curve = fields.Nested(ReflowCurveSchema, required=True, metadata={'description': "The curve data"})
+    running = fields.Boolean(required=True, metadata={'description': "Is the curve process running"})
+    control_state = fields.Enum(ControlState, required=True,
+                                metadata={'description': "Current state of the curve process"})
+    progress = fields.Float(required=True, metadata={'description': "Progress of the curve 0-100%"})
     actual_temperatures = fields.List(fields.List(fields.Float), required=True,
-                                      description="Array of [time, temperature] points defining the actual curve so far")
+                                      metadata={
+                                          'description': "Array of [time, temperature] points defining the actual "
+                                                         "curve so far"})
 
 
 class LogMessageSchema(Schema):
-    message = fields.String(required=True, description="The log message")
-    severity = fields.Enum(LogSeverity, required=True, description="Severity of the log message")
-    time = fields.Integer(required=True, description="Time of the log message in milliseconds since startup")
+    message = fields.String(required=True, metadata={'description': "The log message"})
+    severity = fields.Field(required=True, metadata={'description': "Severity of the log message"})
+    time = fields.Integer(required=True,
+                          metadata={'description': "Time of the log message in milliseconds since startup"})
+
 
 
 app = Flask(__name__)
