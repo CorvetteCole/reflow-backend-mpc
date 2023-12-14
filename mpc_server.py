@@ -138,7 +138,7 @@ def get_logs():
             application/json:
               schema: LogMessagesSchema
     """
-    return LogMessagesSchema().load({'logs': tms.log_messages}), 200
+    return LogMessagesSchema().dump({'logs': tms.log_messages}), 200
 
 
 # To generate OpenAPI documentation
