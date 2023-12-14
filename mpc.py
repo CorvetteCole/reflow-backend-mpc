@@ -284,13 +284,18 @@ class ModelPredictiveControl:
         last_reflow_status = {}
 
         while not self.__should_exit.is_set():
+            control_state = self.__control_state.value
+            desired_oven_state = self.__desired_oven_state.value
+            desired_duty_cycle = self.__desired_duty_cycle.value
+            curve_duration = self.__curve_duration.value
+
             reflow_status = {
                 'state': self.__control_state.value,
             }
 
             # if mpc should be in a "running" state
-            if self.__control_state.value not in [ControlState.IDLE.value, ControlState.CANCELLED.value,
-                                                  ControlState.FAULT.value, ControlState.COMPLETE.value]:
+            if control_state not in [ControlState.IDLE.value, ControlState.CANCELLED.value,
+                                     ControlState.FAULT.value, ControlState.COMPLETE.value]:
                 if not self.busy:
                     # log "control process died"
                     self.__control_state.value = ControlState.FAULT.value
@@ -300,13 +305,13 @@ class ModelPredictiveControl:
 
                 else:
                     # update curve history, but only if the duration has changed. Need to handle first duration too
-                    if self.__control_state.value == ControlState.RUNNING.value:
+                    if control_state == ControlState.RUNNING.value:
                         if not self.__curve_duration_history or self.__curve_duration_history[
-                            -1] != self.__curve_duration.value:
-                            self.__curve_duration_history.append(self.__curve_duration.value)
+                            -1] != curve_duration:
+                            self.__curve_duration_history.append(curve_duration)
                             self.__curve_temperature_history.append(self.temperature)
 
-                    if self.__control_state.value in [ControlState.RUNNING.value, ControlState.COMPLETE.value]:
+                    if control_state in [ControlState.RUNNING.value, ControlState.COMPLETE.value]:
                         reflow_status['actual_temperatures'] = ReflowCurveSchema().dump({
                             'times': self.__curve_duration_history,
                             'temperatures': self.__curve_temperature_history
@@ -316,7 +321,7 @@ class ModelPredictiveControl:
                 self.__desired_oven_state.value = OvenState.IDLE.value
                 self.__desired_duty_cycle.value = 0
 
-            if self.__control_state.value == ControlState.FAULT.value:
+            if control_state == ControlState.FAULT.value:
                 reflow_status['error'] = self.__error_msg
 
             # compare reflow_status to last_reflow_status
@@ -326,16 +331,16 @@ class ModelPredictiveControl:
                     pprint(reflow_status)
                     self.on_reflow_status(ReflowStatusSchema().load(reflow_status))
 
-            if self.__desired_oven_state.value != last_oven_state:
+            if desired_oven_state != last_oven_state:
                 if self.on_desired_oven_state:
-                    self.on_desired_oven_state(OvenState(self.__desired_oven_state.value))
+                    self.on_desired_oven_state(OvenState(desired_oven_state))
 
-            if self.__desired_duty_cycle.value != last_duty_cycle:
+            if desired_duty_cycle != last_duty_cycle:
                 if self.on_desired_duty_cycle:
-                    self.on_desired_duty_cycle(self.__desired_duty_cycle.value)
+                    self.on_desired_duty_cycle(desired_duty_cycle)
 
-            last_oven_state = self.__desired_oven_state.value
-            last_duty_cycle = self.__desired_duty_cycle.value
+            last_oven_state = desired_oven_state
+            last_duty_cycle = desired_duty_cycle
             last_reflow_status = reflow_status
 
             time.sleep(0.1)
