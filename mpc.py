@@ -28,10 +28,10 @@ mpc_horizon = int(mpc_lookahead_s / time_step_s)
 
 
 def _setup_model_and_mpc(curve: ReflowCurveSchema):
-    reflow_curve_function = interp1d(curve.times, curve.temperatures, kind='linear', bounds_error=False,
+    reflow_curve_function = interp1d(curve['times'], curve['temperatures'], kind='linear', bounds_error=False,
                                      fill_value='extrapolate')
 
-    peak_temperature = max(curve.temperatures)
+    peak_temperature = max(curve['temperatures'])
 
     # Parameters for the 2nd order transfer function
     k = 4.7875771211019
@@ -123,16 +123,16 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
     control_state.value = ControlState.PREPARING.value
 
     # add pre-curve time
-    curve.times = [t + pre_curve_time_s for t in curve.times]
+    curve['times'] = [t + pre_curve_time_s for t in curve['times']]
 
     # get index of peak temperature
-    peak_temperature = max(curve.temperatures)
-    peak_temperature_index = curve.temperatures.index(peak_temperature)
-    end_temperature = curve.temperatures[-1]
+    peak_temperature = max(curve['temperatures'])
+    peak_temperature_index = curve['temperatures'].index(peak_temperature)
+    end_temperature = curve['temperatures'][-1]
 
     # anything after peak temperature is removed.
-    curve.times = curve.times[:peak_temperature_index + 1]
-    curve.temperatures = curve.temperatures[:peak_temperature_index + 1]
+    curve['times'] = curve['times'][:peak_temperature_index + 1]
+    curve['temperatures'] = curve['temperatures'][:peak_temperature_index + 1]
 
     model, mpc = _setup_model_and_mpc(curve)
 
@@ -205,7 +205,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
             x0 = np.array([[current_temperature.value], [current_temperature_derivative.value]])
 
             u0 = mpc.make_step(x0)
-            if duration.seconds > curve.times[-1] and peak_hit:
+            if duration.seconds > curve['times'][-1] and peak_hit:
                 u0 = np.array([[0]])
             # clamp to 0-100 integer
             desired_duty_cycle = int(np.clip(u0[0, 0], 0, 100))
