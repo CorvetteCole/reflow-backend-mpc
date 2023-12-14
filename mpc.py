@@ -213,7 +213,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
             if duration.seconds > curve['times'][-1] and peak_hit:
                 u0 = np.array([[0]])
             # clamp to 0-100 integer
-            desired_duty_cycle = int(np.clip(u0[0, 0], 0, 100))
+            desired_duty_cycle.value = int(np.clip(u0[0, 0], 0, 100))
             print(f'At t={duration.seconds}s, T={x0[0, 0]}, dT={x0[1, 0]}, pwm={desired_duty_cycle.value}')
             curve_duration.value = duration.seconds
             time.sleep(max(0, int(time_step_s - (time.monotonic() - loop_start_time))))
