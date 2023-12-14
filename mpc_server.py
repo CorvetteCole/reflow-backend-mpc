@@ -33,7 +33,7 @@ tms = ThermalManagementSystem(
     on_oven_status=lambda status: socketio.emit('oven_status', OvenStatusSchema().dump(status)))
 
 mpc.on_desired_duty_cycle = tms.set_duty_cycle
-mpc.on_oven_state = tms.set_oven_state
+mpc.on_desired_oven_state = tms.set_oven_state
 
 
 def handle_oven_status(status):

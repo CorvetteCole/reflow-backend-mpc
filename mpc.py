@@ -242,9 +242,9 @@ class ModelPredictiveControl:
 
     __error_msg = ""
 
-    on_reflow_status: Callable[[ReflowStatusSchema], None]
-    on_desired_oven_state: Callable[[OvenState], None]
-    on_desired_duty_cycle: Callable[[int], None]
+    on_reflow_status: Callable[[ReflowStatusSchema], None] = None
+    on_desired_oven_state: Callable[[OvenState], None] = None
+    on_desired_duty_cycle: Callable[[int], None] = None
 
     def __init__(self, on_reflow_status: Callable[[ReflowStatusSchema], None] = None):
         self.on_reflow_status = on_reflow_status
