@@ -80,8 +80,8 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
 
 
 class ThermalManagementSystem:
-    __log_messages: List[LogMessageSchema]
-    __oven_status: OvenStatusSchema
+    __log_messages: List[LogMessageSchema] = []
+    __oven_status: OvenStatusSchema = None
 
     __duty_cycle = multiprocessing.Value(c_int)
     __oven_state = multiprocessing.Value(c_int)
@@ -91,12 +91,12 @@ class ThermalManagementSystem:
     __status_queue = multiprocessing.Queue()
     __log_queue = multiprocessing.Queue()
 
-    __communication_process: multiprocessing.Process
+    __communication_process: multiprocessing.Process = None
     __monitor_thread: threading.Thread
 
-    on_log_message: Callable[[LogMessageSchema], None]
-    on_oven_status: Callable[[OvenStatusSchema], None]
-    on_reset: Callable[[], None]
+    on_log_message: Callable[[LogMessageSchema], None] = None
+    on_oven_status: Callable[[OvenStatusSchema], None] = None
+    on_reset: Callable[[], None] = None
 
     def __init__(self, serial_port='/dev/ttyUSB0', baud_rate=115200,
                  on_log_message: Callable[[LogMessageSchema], None] = None,
