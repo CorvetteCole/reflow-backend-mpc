@@ -6,6 +6,8 @@ from ctypes import Structure, c_double, c_int, c_bool
 from typing import Callable, List, Tuple
 import time
 
+from pprint import pprint
+
 import do_mpc
 from casadi import *
 from scipy.interpolate import interp1d
@@ -308,6 +310,8 @@ class ModelPredictiveControl:
             # compare reflow_status to last_reflow_status
             if reflow_status != last_reflow_status:
                 if self.on_reflow_status:
+                    print('reflow status:')
+                    pprint(reflow_status)
                     self.on_reflow_status(ReflowStatusSchema().dump(reflow_status))
 
             if self.__desired_oven_state.value != last_oven_state:
