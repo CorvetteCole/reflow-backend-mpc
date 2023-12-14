@@ -23,35 +23,6 @@ spec = APISpec(
     plugins=[FlaskPlugin(), MarshmallowPlugin()],
 )
 
-testStatus = ReflowStatusSchema().load({
-    'curve': {
-        'name': 'Test Curve',
-        'description': 'A test curve',
-        'times': [0, 30, 60, 90],
-        'temperatures': [25, 150, 170, 210]
-
-    },
-    'running': True,
-    'control_state': ControlState.HEATING.name,
-    'progress': 50,
-    'actual_temperatures': {
-        'times': [0, 30, 60],
-        'temperatures': [25, 150, 200]
-    }
-})
-
-pprint(ReflowStatusSchema().dump(testStatus))
-
-print('\n')
-testCurve = ReflowCurveSchema().load({
-    'name': 'Test Curve',
-    'description': 'A test curve',
-    'times': [0, 30, 60, 90],
-    'temperatures': [25, 150, 170, 210]
-})
-
-pprint(ReflowCurveSchema().dump(testCurve))
-
 app = Flask(__name__)
 socketio = SocketIO(app)
 
