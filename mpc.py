@@ -293,7 +293,7 @@ class ModelPredictiveControl:
                             self.__curve_temperature_history.append(self.temperature)
 
                     if self.__control_state.value in [ControlState.RUNNING.value, ControlState.COMPLETE.value]:
-                        reflow_status['actual_temperatures'] = ReflowCurveSchema().load({
+                        reflow_status['actual_temperatures'] = ReflowCurveSchema().dump({
                             'times': self.__curve_duration_history,
                             'temperatures': self.__curve_temperature_history
                         })
@@ -308,7 +308,7 @@ class ModelPredictiveControl:
             # compare reflow_status to last_reflow_status
             if reflow_status != last_reflow_status:
                 if self.on_reflow_status:
-                    self.on_reflow_status(ReflowStatusSchema().load(reflow_status))
+                    self.on_reflow_status(ReflowStatusSchema().dump(reflow_status))
 
             if self.__desired_oven_state.value != last_oven_state:
                 if self.on_desired_oven_state:
@@ -340,7 +340,7 @@ class ModelPredictiveControl:
 
     @property
     def status(self) -> ControlStatusSchema:
-        return ControlStatusSchema().load({
+        return ControlStatusSchema().dump({
             'curve': self.__curve,
             'reflow': {
                 'state': ControlState(self.__control_state.value),
