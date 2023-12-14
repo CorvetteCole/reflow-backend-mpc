@@ -179,7 +179,7 @@ def create_openapi_spec():
 @socketio.on('disconnect')
 def on_disconnect():
     # Clean up client subscriptions
-       print('Client disconnected')
+    print('Client disconnected')
 
 
 with app.test_request_context():
@@ -191,4 +191,9 @@ with app.test_request_context():
     spec.path(view=get_logs, app=app)
 
 if __name__ == "__main__":
-    socketio.run(app, host='0.0.0.0', port=5000)
+    try:
+        socketio.run(app, host='0.0.0.0', port=5000)
+    except KeyboardInterrupt:
+        print('Exiting...')
+        del tms
+        del mpc

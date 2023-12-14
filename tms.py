@@ -5,6 +5,7 @@ import queue
 import threading
 import time
 import gpiod
+from pprint import pprint
 
 import serial
 from ctypes import c_int
@@ -129,6 +130,7 @@ class ThermalManagementSystem:
             while (not self.__should_exit.is_set()) or self.__status_queue.not_empty or self.__log_queue.not_empty:
                 try:
                     status = self.__status_queue.get_nowait()
+                    pprint(status)
                     if self.on_oven_status:
                         self.on_oven_status(status)
                     self.__oven_status = status
@@ -138,6 +140,7 @@ class ThermalManagementSystem:
                 try:
                     log = self.__log_queue.get_nowait()
                     self.__log_messages.append(log)
+                    pprint(log)
                     if self.on_log_message:
                         self.on_log_message(log)
                 except queue.Empty:
