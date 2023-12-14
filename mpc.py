@@ -344,10 +344,10 @@ class ModelPredictiveControl:
 
     @property
     def status(self) -> ControlStatusSchema:
-        return ControlStatusSchema().dump({
+        return ControlStatusSchema().load({
             'curve': self.__curve,
             'reflow': {
-                'state': ControlState(self.__control_state.value),
+                'state': self.__control_state.value,
                 'error': self.__error_msg,
                 'actual_temperatures': {
                     'times': self.__curve_duration_history,
