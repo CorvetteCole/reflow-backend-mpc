@@ -402,6 +402,7 @@ class ModelPredictiveControl:
                                                                self.__desired_duty_cycle,
                                                                self.__curve_duration,
                                                                self.__should_exit_mpc))
+        self.__control_process.start()
 
     def stop(self):
         if self.busy:
