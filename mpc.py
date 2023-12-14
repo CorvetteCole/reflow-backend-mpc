@@ -138,6 +138,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
 
     if current_temperature.value > new_run_threshold_temperature:
         # log "waiting for cooldown"
+        print(f"Waiting for cooldown, current temperature is {current_temperature.value}°C")
         desired_oven_state.value = OvenState.COOLING.value
         desired_duty_cycle.value = 0
         while current_temperature.value > new_run_threshold_temperature:
@@ -146,6 +147,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
             time.sleep(0.1)
 
     # log "waiting for door to be closed"
+    print("Waiting for door to be closed")
     while current_door_open.value:
         if should_exit.is_set():
             return
@@ -153,6 +155,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
 
     # settling time, door closed
     # log "settling..."
+    print("Settling...")
     desired_oven_state.value = OvenState.IDLE.value
     settle_start_time = time.monotonic()
     while time.monotonic() - settle_start_time < settle_time.total_seconds():
@@ -164,6 +167,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
         time.sleep(0.1)
 
     # log "preheating"
+    print("Preheating...")
     desired_oven_state.value = OvenState.HEATING.value
     desired_duty_cycle.value = 100
     preheat_start_time = time.monotonic()
@@ -173,6 +177,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
         time.sleep(0.1)
 
     # log "beginning reflow"
+    print("Beginning reflow...")
     control_state.value = ControlState.RUNNING.value
 
     peak_hit = False
