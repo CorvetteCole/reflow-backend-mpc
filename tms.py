@@ -73,7 +73,7 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
                     should_reset.set()
 
                 if (time.monotonic() - last_send_time) >= heartbeat_send_interval.total_seconds():
-                    ser.write(json.dumps({'state': oven_state.value, 'pwm': duty_cycle.value}))
+                    ser.write(json.dumps({'state': oven_state.value, 'pwm': duty_cycle.value}).encode())
                     last_send_time = time.monotonic()
         # log message "waiting 1 second before reconnecting"
         time.sleep(1)

@@ -168,3 +168,4 @@ if __name__ == "__main__":
         print('Exiting...')
         del tms
         del mpc
+        socketio.stop()
