@@ -135,7 +135,9 @@ class ThermalManagementSystem:
         with gpiod.request_lines('/dev/gpiochip2', consumer="reflow-backend", config={
             reset_line: gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT, output_value=gpiod.line.Value.ACTIVE)
         }) as gpio_request:
-            while (not self.__should_exit.is_set()) or self.__status_queue.not_empty or self.__log_queue.not_empty:
+
+            self.__status_queue.empty()
+            while (not self.__should_exit.is_set()) or not self.__status_queue.empty() or not self.__log_queue.empty():
                 try:
                     status = self.__status_queue.get_nowait()
                     pprint(status)
