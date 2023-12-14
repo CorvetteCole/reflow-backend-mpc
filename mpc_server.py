@@ -82,11 +82,14 @@ def start_curve():
     """
     # Validate the curve data, times and temperatures must ascend
     curve_data = request.get_json()
-    errors = ReflowCurveSchema().validate(curve_data)
-    if errors:
-        return jsonify({'status': 'error', 'message': errors}), 400
-
-    return jsonify({'status': 'success', 'message': 'Curve process started.'}), 200
+    try:
+        curve = ReflowCurveSchema().load(curve_data)
+        mpc.start(curve)
+        return jsonify({'status': 'success', 'message': 'Curve process started.'}), 200
+    except ValidationError as err:
+        return jsonify({'status': 'error', 'message': err.messages}), 400
+    except RuntimeError as err:
+        return jsonify({'status': 'error', 'message': str(err)}), 400
 
 
 @app.route('/curve_status', methods=['GET'])

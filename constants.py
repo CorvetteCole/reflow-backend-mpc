@@ -23,11 +23,11 @@ class OvenState(Enum):
 
 class ControlState(Enum):
     IDLE = 0
-    PREHEATING = 1
-    HEATING = 2
-    COOLING = 3
-    FAULT = 4
-    COMPLETE = 5
+    PREPARING = 1
+    RUNNING = 2
+    COMPLETE = 3
+    CANCELLED = 4
+    FAULT = 5
 
     # from string
     @classmethod

@@ -25,10 +25,11 @@ class ReflowCurveSchema(Schema):
 
 
 class ReflowStatusSchema(Schema):
-    actual_temperatures = fields.Nested(ReflowCurveSchema, required=True,
+    actual_temperatures = fields.Nested(ReflowCurveSchema,
                                         metadata={'description': "Array of points defining the actual curve so far"})
     state = fields.Enum(ControlState, required=True,
                         metadata={'description': "Current state of the reflow process"})
+    error = fields.String(metadata={'description': "Error message if state is FAULT"})
 
 
 class ControlStatusSchema(Schema):
