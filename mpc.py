@@ -252,7 +252,12 @@ class ModelPredictiveControl:
         self.__desired_oven_state.value = OvenState.IDLE.value
         self.__desired_duty_cycle.value = 0
 
-        self.__curve = ReflowCurveSchema()
+        self.__curve = ReflowCurveSchema().load({
+            "name": "Unleaded",
+            "description": "Default unleaded curve",
+            "times": [90, 180, 210, 240, 270],
+            "temperatures": [90, 130, 138, 165, 138]
+        })
         self.__monitor_thread = threading.Thread(target=self.__monitor)
         self.__monitor_thread.start()
 
