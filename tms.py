@@ -124,9 +124,13 @@ class ThermalManagementSystem:
         self.__communication_process.start()
 
     def __del__(self):
+        print('tms set should exit')
         self.__should_exit.set()
+        print('tms comm process join')
         self.__communication_process.join()
+        print('tms monitor join')
         self.__monitor_thread.join()
+        print('tms del done')
 
     def __monitor(self):
         """
@@ -136,7 +140,6 @@ class ThermalManagementSystem:
             reset_line: gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT, output_value=gpiod.line.Value.ACTIVE)
         }) as gpio_request:
 
-            self.__status_queue.empty()
             while (not self.__should_exit.is_set()) or not self.__status_queue.empty() or not self.__log_queue.empty():
                 try:
                     status = self.__status_queue.get_nowait()
