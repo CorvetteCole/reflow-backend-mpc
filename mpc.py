@@ -136,6 +136,10 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
 
     model, mpc = _setup_model_and_mpc(curve)
 
+    # TODO would be cool to do dynamic preheat. I.e. we can start a curve if we're at 90°C,
+    #  target preheat to the relevant part of the provided curve, cutting off the lower parts, once we have momentum
+    #  from the preheat engage MPC control
+
     if current_temperature.value > new_run_threshold_temperature:
         # log "waiting for cooldown"
         print(f"Waiting for cooldown, current temperature is {current_temperature.value}°C")
