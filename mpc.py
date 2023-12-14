@@ -1,4 +1,5 @@
 import multiprocessing
+import threading
 
 # from multiprocessing.sharedctypes import Array, Value
 from ctypes import Structure, c_double, c_int
@@ -8,16 +9,32 @@ from time import time
 from schemas import *
 
 
-class Mpc:
+def _run_curve(curve: ReflowCurveSchema, state: multiprocessing.Value,
+               should_exit: multiprocessing.Event):
+    # TODO
+    pass
+
+
+class ModelPredictiveControl:
     __mgr = multiprocessing.Manager()
 
     __curve: ReflowCurveSchema
-    __process: multiprocessing.Process
 
-    __temperatures = __mgr.list()
+    __control_process: multiprocessing.Process
+    __monitor_thread: threading.Thread
+
+    __temperatures = []
     __state = ControlState.IDLE
 
     on_reflow_status: Callable[[ReflowStatusSchema], None]
+
+    def __init__(self, on_reflow_status: Callable[[ReflowStatusSchema], None] = None):
+        self.on_reflow_status = on_reflow_status
+
+        self.__curve = ReflowCurveSchema()
+
+        self.__control_process = multiprocessing.Process(target=self.__run)
+
 
     @property
     def curve(self) -> ReflowCurveSchema:

@@ -97,7 +97,7 @@ class ThermalManagementSystem:
     on_oven_status: Callable[[OvenStatusSchema], None]
     on_reset: Callable[[], None]
 
-    def __init__(self, serial_port: str, baud_rate: int,
+    def __init__(self, serial_port='/dev/ttyUSB0', baud_rate=115200,
                  on_log_message: Callable[[LogMessageSchema], None] = None,
                  on_oven_status: Callable[[OvenStatusSchema], None] = None,
                  on_reset: Callable[[], None] = None):

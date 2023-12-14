@@ -5,6 +5,8 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
 
 from schemas import *
+from tms import ThermalManagementSystem
+from mpc import ModelPredictiveControl
 
 import warnings
 
@@ -50,10 +52,12 @@ testCurve = ReflowCurveSchema().load({
 
 pprint(ReflowCurveSchema().dump(testCurve))
 
-exit(0)
-
 app = Flask(__name__)
 socketio = SocketIO(app)
+
+mpc = ModelPredictiveControl(on_reflow_status=lambda status: socketio.emit('reflow_status', status))
+tms = ThermalManagementSystem(on_log_message=lambda message: socketio.emit('log_message', message),
+                              on_oven_status=lambda status: socketio.emit('oven_status', status))
 
 client_subscriptions = {}
 
@@ -190,7 +194,7 @@ def handle_subscribe(message):
     """Subscribe a client to one or more channels."""
     sid = request.sid
     channels = message.get('channels', [])
-    valid_channels = {'oven_status', 'curve_status', 'log_message'}
+    valid_channels = {'oven_status', 'reflow_status', 'log_message'}
 
     # Store only valid channel names
     selected_channels = {channel for channel in channels if channel in valid_channels}
@@ -208,7 +212,7 @@ def handle_unsubscribe(message):
     """Unsubscribe a client from one or more channels."""
     sid = request.sid
     channels = message.get('channels', [])
-    valid_channels = {'oven_status', 'curve_status', 'log_message'}
+    valid_channels = {'oven_status', 'reflow_status', 'log_message'}
 
     # Only proceed if the client has any subscriptions
     if sid in client_subscriptions:
