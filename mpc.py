@@ -146,6 +146,8 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
                 return
             time.sleep(0.1)
 
+    # TODO need to remove all temperatures from the curve that are less than the current temperature
+
     # log "waiting for door to be closed"
     print("Waiting for door to be closed")
     while current_door_open.value:

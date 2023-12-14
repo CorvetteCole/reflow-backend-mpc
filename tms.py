@@ -85,6 +85,9 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
                 should_exit.set()
             except serial.SerialException:
                 print("tms serial exception")
+            except Exception as e:
+                print("tms exception")
+                print(e)
         # log message "waiting 1 second before reconnecting"
         time.sleep(1)
 

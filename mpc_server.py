@@ -40,6 +40,8 @@ def handle_oven_status(status):
     mpc.temperature = status['temperature']
     mpc.door_open = status['door_open']
     socketio.emit('oven_status', status)
+    if status['state'] == OvenState.FAULT:
+        mpc.stop()
 
 
 tms.on_oven_status = handle_oven_status
