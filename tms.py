@@ -18,6 +18,8 @@ heartbeat_send_interval = datetime.timedelta(milliseconds=500)
 # expect to receive a heartbeat at least every second
 heartbeat_receive_threshold = datetime.timedelta(milliseconds=1000)
 
+print_status_interval = datetime.timedelta(seconds=2)
+
 reset_line = 15
 
 
@@ -140,10 +142,13 @@ class ThermalManagementSystem:
             reset_line: gpiod.LineSettings(direction=gpiod.line.Direction.OUTPUT, output_value=gpiod.line.Value.ACTIVE)
         }) as gpio_request:
 
+            last_print_status_time = time.monotonic()
             while (not self.__should_exit.is_set()) or not self.__status_queue.empty() or not self.__log_queue.empty():
                 try:
                     status = self.__status_queue.get_nowait()
-                    # pprint(status)
+                    if (time.monotonic() - last_print_status_time) >= print_status_interval.total_seconds():
+                        last_print_status_time = time.monotonic()
+                        pprint(status)
                     if self.on_oven_status:
                         self.on_oven_status(status)
                     self.__oven_status = status
