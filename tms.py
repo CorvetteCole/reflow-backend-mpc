@@ -27,10 +27,11 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
                           duty_cycle: multiprocessing.Value, oven_state: multiprocessing.Value, serial_port: str,
                           baud_rate: int, should_exit: multiprocessing.Event, should_reset: multiprocessing.Event):
     while not should_exit.is_set():
-        with serial.Serial(serial_port, baud_rate, timeout=1) as ser:
-            last_send_time = time.monotonic()
-            last_receive_time = time.monotonic()
-            try:
+        try:
+            with serial.Serial(serial_port, baud_rate, timeout=1) as ser:
+                last_send_time = time.monotonic()
+                last_receive_time = time.monotonic()
+
                 while not should_exit.is_set():
                     # check if serial data is available
                     if ser.in_waiting > 0:
@@ -80,14 +81,14 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
                         last_send_time = time.monotonic()
 
                     time.sleep(0.1)
-            except KeyboardInterrupt:
-                print("tms keyboardinterrupt")
-                should_exit.set()
-            except serial.SerialException:
-                print("tms serial exception")
-            except Exception as e:
-                print("tms exception")
-                print(e)
+        except KeyboardInterrupt:
+            print("tms keyboardinterrupt")
+            should_exit.set()
+        except serial.SerialException:
+            print("tms serial exception")
+        except Exception as e:
+            print("tms exception")
+            print(e)
         # log message "waiting 1 second before reconnecting"
         time.sleep(1)
 
