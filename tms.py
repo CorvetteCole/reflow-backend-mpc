@@ -143,7 +143,7 @@ class ThermalManagementSystem:
             while (not self.__should_exit.is_set()) or not self.__status_queue.empty() or not self.__log_queue.empty():
                 try:
                     status = self.__status_queue.get_nowait()
-                    pprint(status)
+                    # pprint(status)
                     if self.on_oven_status:
                         self.on_oven_status(status)
                     self.__oven_status = status

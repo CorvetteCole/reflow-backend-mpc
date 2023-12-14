@@ -200,7 +200,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
                 print(f"Peak temperature of {peak_temperature}°C reached at t={duration.seconds}s")
                 print(f'Starting cooldown')
 
-            if current_temperature.value <= end_temperature:
+            if current_temperature.value <= end_temperature and duration.seconds >= curve['times'][-1]:
                 print(f"End temperature of {end_temperature}°C reached at t={duration.seconds}s")
                 print(f'Ending reflow curve')
                 desired_oven_state.value = OvenState.IDLE.value
