@@ -28,53 +28,59 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
         with serial.Serial(serial_port, baud_rate, timeout=1) as ser:
             last_send_time = time.monotonic()
             last_receive_time = time.monotonic()
-            while not should_exit.is_set():
-                # check if serial data is available
-                if ser.in_waiting > 0:
-                    # read a line
-                    line = ser.readline().decode().strip()
-                    if line:
-                        try:
-                            data = json.loads(line)
-                            if 'current' in data:
-                                # status object
-                                parsed_data = OvenStatusSchema().load({
-                                    "time": data['time'],
-                                    "temperature": data['current'],
-                                    "state": data['state'],
-                                    "duty_cycle": data['pwm'],
-                                    "door_open": data['door'] == 'open',
-                                    "errors": error_to_strings(data['error'])
-                                })
-                                status_queue.put_nowait(parsed_data)
-                            else:
-                                # log message
-                                parsed_data = LogMessageSchema().load({
-                                    "message": data['message'],
-                                    "severity": data['severity'],
-                                    "time": data['time']
-                                })
-                                log_queue.put_nowait(parsed_data)
-                            last_receive_time = time.monotonic()
-                        except json.JSONDecodeError:
-                            # log warning
+            try:
+                while not should_exit.is_set():
+                    # check if serial data is available
+                    if ser.in_waiting > 0:
+                        # read a line
+                        line = ser.readline().decode().strip()
+                        if line:
+                            try:
+                                data = json.loads(line)
+                                if 'current' in data:
+                                    # status object
+                                    parsed_data = OvenStatusSchema().load({
+                                        "time": data['time'],
+                                        "temperature": data['current'],
+                                        "state": data['state'],
+                                        "duty_cycle": data['pwm'],
+                                        "door_open": data['door'] == 'open',
+                                        "errors": error_to_strings(data['error'])
+                                    })
+                                    status_queue.put_nowait(parsed_data)
+                                else:
+                                    # log message
+                                    parsed_data = LogMessageSchema().load({
+                                        "message": data['message'],
+                                        "severity": data['severity'],
+                                        "time": data['time']
+                                    })
+                                    log_queue.put_nowait(parsed_data)
+                                last_receive_time = time.monotonic()
+                            except json.JSONDecodeError:
+                                # log warning
+                                pass
+                            except queue.Empty:
+                                # log warning
+                                pass
+                            except Exception as e:
+                                # log error
+                                pass
+                        else:
+                            # log warning, trigger reset
                             pass
-                        except queue.Empty:
-                            # log warning
-                            pass
-                        except Exception as e:
-                            # log error
-                            pass
-                    else:
-                        # log warning, trigger reset
-                        pass
-                elif (time.monotonic() - last_receive_time) >= heartbeat_receive_threshold.total_seconds():
-                    # log warning
-                    should_reset.set()
+                    elif (time.monotonic() - last_receive_time) >= heartbeat_receive_threshold.total_seconds():
+                        # log warning
+                        should_reset.set()
 
-                if (time.monotonic() - last_send_time) >= heartbeat_send_interval.total_seconds():
-                    ser.write(json.dumps({'state': oven_state.value, 'pwm': duty_cycle.value}).encode())
-                    last_send_time = time.monotonic()
+                    if (time.monotonic() - last_send_time) >= heartbeat_send_interval.total_seconds():
+                        ser.write(json.dumps({'state': oven_state.value, 'pwm': duty_cycle.value}).encode())
+                        last_send_time = time.monotonic()
+            except KeyboardInterrupt:
+                print("tms keyboardinterrupt")
+                should_exit.set()
+            except serial.SerialException:
+                print("tms serial exception")
         # log message "waiting 1 second before reconnecting"
         time.sleep(1)
 

@@ -178,36 +178,41 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
     mpc.x0['dT'] = current_temperature_derivative.value
     mpc.set_initial_guess()
     curve_start_time = time.monotonic()
+
     while True:
-        loop_start_time = time.monotonic()
-        if should_exit.is_set():
-            return
+        try:
+            loop_start_time = time.monotonic()
+            if should_exit.is_set():
+                return
 
-        duration = datetime.timedelta(seconds=time.monotonic() - curve_start_time)
+            duration = datetime.timedelta(seconds=time.monotonic() - curve_start_time)
 
-        if current_temperature.value >= peak_temperature and not peak_hit:
-            peak_hit = True
-            desired_oven_state.value = OvenState.COOLING.value
-            print(f"Peak temperature of {peak_temperature}°C reached at t={duration.seconds}s")
-            print(f'Starting cooldown')
+            if current_temperature.value >= peak_temperature and not peak_hit:
+                peak_hit = True
+                desired_oven_state.value = OvenState.COOLING.value
+                print(f"Peak temperature of {peak_temperature}°C reached at t={duration.seconds}s")
+                print(f'Starting cooldown')
 
-        if current_temperature.value <= end_temperature:
-            print(f"End temperature of {end_temperature}°C reached at t={duration.seconds}s")
-            print(f'Ending reflow curve')
-            desired_oven_state.value = OvenState.IDLE.value
-            control_state.value = ControlState.COMPLETE.value
+            if current_temperature.value <= end_temperature:
+                print(f"End temperature of {end_temperature}°C reached at t={duration.seconds}s")
+                print(f'Ending reflow curve')
+                desired_oven_state.value = OvenState.IDLE.value
+                control_state.value = ControlState.COMPLETE.value
+                break
+
+            x0 = np.array([[current_temperature.value], [current_temperature_derivative.value]])
+
+            u0 = mpc.make_step(x0)
+            if duration.seconds > curve.times[-1] and peak_hit:
+                u0 = np.array([[0]])
+            # clamp to 0-100 integer
+            desired_duty_cycle = int(np.clip(u0[0, 0], 0, 100))
+            print(f'At t={duration.seconds}s, T={x0[0, 0]}, dT={x0[1, 0]}, pwm={desired_duty_cycle.value}')
+            curve_duration.value = duration.seconds
+            time.sleep(max(0, int(time_step_s - (time.monotonic() - loop_start_time))))
+        except KeyboardInterrupt:
+            print("mpc keyboardinterrupt")
             break
-
-        x0 = np.array([[current_temperature.value], [current_temperature_derivative.value]])
-
-        u0 = mpc.make_step(x0)
-        if duration.seconds > curve.times[-1] and peak_hit:
-            u0 = np.array([[0]])
-        # clamp to 0-100 integer
-        desired_duty_cycle = int(np.clip(u0[0, 0], 0, 100))
-        print(f'At t={duration.seconds}s, T={x0[0, 0]}, dT={x0[1, 0]}, pwm={desired_duty_cycle.value}')
-        curve_duration.value = duration.seconds
-        time.sleep(max(0, int(time_step_s - (time.monotonic() - loop_start_time))))
 
 
 class ModelPredictiveControl:
