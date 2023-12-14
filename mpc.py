@@ -290,7 +290,7 @@ class ModelPredictiveControl:
 
             # if mpc should be in a "running" state
             if self.__control_state.value not in [ControlState.IDLE.value, ControlState.CANCELLED.value,
-                                                  ControlState.FAULT.value]:
+                                                  ControlState.FAULT.value, ControlState.COMPLETE.value]:
                 if not self.busy:
                     # log "control process died"
                     self.__control_state.value = ControlState.FAULT.value
