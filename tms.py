@@ -76,6 +76,8 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
                     if (time.monotonic() - last_send_time) >= heartbeat_send_interval.total_seconds():
                         ser.write(json.dumps({'state': oven_state.value, 'pwm': duty_cycle.value}).encode())
                         last_send_time = time.monotonic()
+
+                    time.sleep(0.1)
             except KeyboardInterrupt:
                 print("tms keyboardinterrupt")
                 should_exit.set()
@@ -159,6 +161,8 @@ class ThermalManagementSystem:
                     self.__should_reset.clear()
                     if self.on_reset:
                         self.on_reset()
+
+                time.sleep(0.1)
 
     @property
     def log_messages(self):
