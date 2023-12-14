@@ -236,8 +236,8 @@ class ModelPredictiveControl:
     __error_msg = ""
 
     on_reflow_status: Callable[[ReflowStatusSchema], None]
-    on_oven_state: Callable[[OvenState], None]
-    on_duty_cycle: Callable[[int], None]
+    on_desired_oven_state: Callable[[OvenState], None]
+    on_desired_duty_cycle: Callable[[int], None]
 
     def __init__(self, on_reflow_status: Callable[[ReflowStatusSchema], None] = None):
         self.on_reflow_status = on_reflow_status
@@ -306,12 +306,12 @@ class ModelPredictiveControl:
                     self.on_reflow_status(ReflowStatusSchema().load(reflow_status))
 
             if self.__desired_oven_state.value != last_oven_state:
-                if self.on_oven_state:
-                    self.on_oven_state(OvenState(self.__desired_oven_state.value))
+                if self.on_desired_oven_state:
+                    self.on_desired_oven_state(OvenState(self.__desired_oven_state.value))
 
             if self.__desired_duty_cycle.value != last_duty_cycle:
-                if self.on_duty_cycle:
-                    self.on_duty_cycle(self.__desired_duty_cycle.value)
+                if self.on_desired_duty_cycle:
+                    self.on_desired_duty_cycle(self.__desired_duty_cycle.value)
 
             last_oven_state = self.__desired_oven_state.value
             last_duty_cycle = self.__desired_duty_cycle.value

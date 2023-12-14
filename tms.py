@@ -163,6 +163,9 @@ class ThermalManagementSystem:
     def oven_state(self) -> OvenState:
         return OvenState(self.__oven_state.value)
 
+    def set_oven_state(self, value: OvenState):
+        self.oven_state = value
+
     @oven_state.setter
     def oven_state(self, value: OvenState):
         self.__oven_state.value = value.value
@@ -170,6 +173,9 @@ class ThermalManagementSystem:
     @property
     def duty_cycle(self) -> int:
         return self.__duty_cycle.value
+
+    def set_duty_cycle(self, value: int):
+        self.duty_cycle = value
 
     @duty_cycle.setter
     def duty_cycle(self, value: int):
