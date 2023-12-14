@@ -327,8 +327,6 @@ class ModelPredictiveControl:
             # compare reflow_status to last_reflow_status
             if reflow_status != last_reflow_status:
                 if self.on_reflow_status:
-                    print('reflow status:')
-                    pprint(reflow_status)
                     self.on_reflow_status(ReflowStatusSchema().load(reflow_status))
 
             if desired_oven_state != last_oven_state:
