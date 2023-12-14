@@ -27,7 +27,7 @@ class ReflowCurveSchema(Schema):
 class ReflowStatusSchema(Schema):
     actual_temperatures = fields.Nested(ReflowCurveSchema,
                                         metadata={'description': "Array of points defining the actual curve so far"})
-    state = fields.Enum(ControlState, required=True,
+    state = fields.Enum(ControlState, by_value=True, required=True,
                         metadata={'description': "Current state of the reflow process"})
     error = fields.String(metadata={'description': "Error message if state is FAULT"})
 
@@ -40,7 +40,7 @@ class ControlStatusSchema(Schema):
 class OvenStatusSchema(Schema):
     time = fields.Int(required=True, metadata={'description': "Time in milliseconds since startup"})
     temperature = fields.Float(required=True, metadata={'description': "The current temperature of the oven"})
-    state = fields.Enum(OvenState, required=True, metadata={'description': "The current state of the oven"})
+    state = fields.Enum(OvenState, by_value=True, required=True, metadata={'description': "The current state of the oven"})
     duty_cycle = fields.Int(required=True, metadata={'description': "The current duty cycle of the oven"})
     door_open = fields.Boolean(required=True, metadata={'description': "Whether the oven door is open or not"})
     errors = fields.List(fields.String, metadata={'description': "Array of errors if state is FAULT"})
@@ -53,7 +53,7 @@ class OvenStatusSchema(Schema):
 
 class LogMessageSchema(Schema):
     message = fields.String(required=True, metadata={'description': "The log message"})
-    severity = fields.Enum(LogSeverity, required=True, metadata={'description': "Severity of the log message"})
+    severity = fields.Enum(LogSeverity, by_value=True, required=True, metadata={'description': "Severity of the log message"})
     time = fields.Integer(required=True,
                           metadata={'description': "Time of the log message in milliseconds since startup"})
 

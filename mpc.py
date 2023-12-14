@@ -213,7 +213,7 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
 class ModelPredictiveControl:
     __curve: ReflowCurveSchema
 
-    __control_process: multiprocessing.Process
+    __control_process: multiprocessing.Process = None
     __monitor_thread: threading.Thread
 
     __current_temperature = multiprocessing.Value(c_double)
@@ -266,7 +266,7 @@ class ModelPredictiveControl:
 
         while not self.__should_exit.is_set():
             reflow_status = {
-                'state': ControlState(self.__control_state.value),
+                'state': self.__control_state.value,
             }
 
             # if mpc should be in a "running" state

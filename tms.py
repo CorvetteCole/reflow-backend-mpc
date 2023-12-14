@@ -41,7 +41,7 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
                                 parsed_data = OvenStatusSchema().load({
                                     "time": data['time'],
                                     "temperature": data['current'],
-                                    "state": OvenState(data['state']),
+                                    "state": data['state'],
                                     "duty_cycle": data['pwm'],
                                     "door_open": data['door'] == 'open',
                                     "errors": error_to_strings(data['error'])
@@ -51,7 +51,7 @@ def _handle_communication(status_queue: multiprocessing.Queue, log_queue: multip
                                 # log message
                                 parsed_data = LogMessageSchema().load({
                                     "message": data['message'],
-                                    "severity": LogSeverity(data['severity']),
+                                    "severity": data['severity'],
                                     "time": data['time']
                                 })
                                 log_queue.put_nowait(parsed_data)
