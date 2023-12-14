@@ -26,9 +26,11 @@ spec = APISpec(
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-mpc = ModelPredictiveControl(on_reflow_status=lambda status: socketio.emit('reflow_status', status))
-tms = ThermalManagementSystem(on_log_message=lambda message: socketio.emit('log_message', message),
-                              on_oven_status=lambda status: socketio.emit('oven_status', status))
+mpc = ModelPredictiveControl(
+    on_reflow_status=lambda status: socketio.emit('reflow_status', ReflowStatusSchema().dump(status)))
+tms = ThermalManagementSystem(
+    on_log_message=lambda message: socketio.emit('log_message', LogMessageSchema().dump(message)),
+    on_oven_status=lambda status: socketio.emit('oven_status', OvenStatusSchema().dump(status)))
 
 mpc.on_desired_duty_cycle = tms.set_duty_cycle
 mpc.on_oven_state = tms.set_oven_state
@@ -87,7 +89,7 @@ def curve_status():
             application/json:
               schema: ControlStatusSchema
     """
-    return mpc.status, 200
+    return ControlStatusSchema().dump(mpc.status), 200
 
 
 @app.route('/stop_curve', methods=['POST'])

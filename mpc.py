@@ -312,7 +312,7 @@ class ModelPredictiveControl:
                 if self.on_reflow_status:
                     print('reflow status:')
                     pprint(reflow_status)
-                    self.on_reflow_status(ReflowStatusSchema().dump(reflow_status))
+                    self.on_reflow_status(ReflowStatusSchema().load(reflow_status))
 
             if self.__desired_oven_state.value != last_oven_state:
                 if self.on_desired_oven_state:
