@@ -6,6 +6,7 @@ from constants import ControlState, LogSeverity, OvenState
 class ReflowCurveSchema(Schema):
     name = fields.String(metadata={'description': "Name of the curve"})
     description = fields.String(metadata={'description': "Description of the curve"})
+    id = fields.String(metadata={'description': "ID of the curve"})
     times = fields.List(fields.Int, required=True, metadata={'description': "Array of times in seconds"})
     temperatures = fields.List(fields.Float, required=True,
                                metadata={'description': "Array of temperatures in degrees Celsius"})

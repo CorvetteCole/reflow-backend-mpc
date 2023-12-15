@@ -222,7 +222,12 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
             desired_duty_cycle.value = int(np.clip(u0[0, 0], 0, 100))
             print(f'At t={duration.seconds}s, T={x0[0, 0]}, dT={x0[1, 0]}, pwm={desired_duty_cycle.value}')
             curve_duration.value = duration.seconds
-            time.sleep(max(0, int(time_step_s - (time.monotonic() - loop_start_time))))
+
+            loop_time = time.monotonic() - loop_start_time
+            if loop_time > time_step_s:
+                print(f"Loop time of {loop_time}s is greater than time step of {time_step_s}s")
+            else:
+                time.sleep(time_step_s - loop_time)
         except KeyboardInterrupt:
             print("mpc keyboardinterrupt")
             break

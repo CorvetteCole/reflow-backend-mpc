@@ -1,0 +1,20 @@
+{
+  "name": "Unleaded",
+  "description": "Chip Quik© TS391LT",
+  "times": [
+    0,
+    90,
+    180,
+    210,
+    240,
+    270
+  ],
+  "temperatures": [
+    25,
+    90,
+    130,
+    138,
+    165,
+    138
+  ]
+}
