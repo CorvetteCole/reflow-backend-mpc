@@ -1,0 +1,14 @@
+[Unit]
+Description=Reflow MPC backend
+
+[Service]
+Type=simple
+ExecStart=/root/reflow-backend-mpc/venv/bin/python3 /root/reflow-backend-mpc/mpc_server.py
+WorkingDirectory=/root/reflow-backend-mpc
+KillSignal=SIGINT
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
