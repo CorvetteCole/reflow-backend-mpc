@@ -11,8 +11,8 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
 
 from schemas import *
-# from tms import ThermalManagementSystem
-from mock_tms import MockThermalManagementSystem as ThermalManagementSystem
+from tms import ThermalManagementSystem
+# from mock_tms import MockThermalManagementSystem as ThermalManagementSystem
 from mpc import ModelPredictiveControl
 
 import warnings
