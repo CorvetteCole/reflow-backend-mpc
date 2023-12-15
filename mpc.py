@@ -408,6 +408,7 @@ class ModelPredictiveControl:
 
         self.__curve = curve
         self.__control_state.value = ControlState.IDLE.value
+        self.__should_exit_mpc.clear()
         self.__curve_duration_history = []
         self.__curve_temperature_history = []
         self.__curve_duration.value = 0
