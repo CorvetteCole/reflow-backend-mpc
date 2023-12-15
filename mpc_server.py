@@ -127,7 +127,6 @@ mpc.on_desired_oven_state = tms.set_oven_state
 def handle_oven_status(status):
     mpc.temperature = status['temperature']
     mpc.door_open = status['door_open']
-    print('oven status')
     emit_queue.put_nowait(('oven_status', OvenStatusSchema().dump(status)))
     if status['state'] == OvenState.FAULT:
         mpc.stop()
