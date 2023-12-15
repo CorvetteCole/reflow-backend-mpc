@@ -150,7 +150,12 @@ def _run_curve(curve: ReflowCurveSchema, control_state: multiprocessing.Value,
                 return
             time.sleep(0.1)
 
-    # TODO need to remove all temperatures from the curve that are less than the current temperature
+    # need to remove all temperatures from the curve that are less than the current temperature, also need to remove times
+    for i, t in enumerate(curve['times']):
+        if t < curve_duration.value:
+            curve['times'] = curve['times'][i:]
+            curve['temperatures'] = curve['temperatures'][i:]
+            break
 
     # log "waiting for door to be closed"
     print("Waiting for door to be closed")
